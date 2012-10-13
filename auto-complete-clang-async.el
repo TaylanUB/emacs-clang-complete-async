@@ -59,15 +59,13 @@ This variable will typically contain include paths, e.g., (\"-I~/MyProject\" \"-
 
 
 (defconst ac-clang-completion-pattern
-  "^COMPLETION: \\(%s[^\s\n:]*\\)\\(?: : \\)*\\(.*$\\)")
+  "^COMPLETION: \\([^\s\n:]*\\)\\(?: : \\)*\\(.*$\\)")
 
-(defun ac-clang-parse-output (prefix)
+(defun ac-clang-parse-output ()
   (goto-char (point-min))
-  (let ((pattern (format ac-clang-completion-pattern
-                         (regexp-quote prefix)))
-        lines match detailed-info
+  (let (lines match detailed-info
         (prev-match ""))
-    (while (re-search-forward pattern nil t)
+    (while (re-search-forward ac-clang-completion-pattern nil t)
       (setq match (match-string-no-properties 1))
       (unless (string= "Pattern" match)
         (setq detailed-info (match-string-no-properties 2))
@@ -318,7 +316,6 @@ This variable will typically contain include paths, e.g., (\"-I~/MyProject\" \"-
 (defvar ac-clang-status 'idle)
 (defvar ac-clang-current-candidate nil)
 (defvar ac-clang-completion-process nil)
-(defvar ac-clang-saved-prefix "")
 
 (make-variable-buffer-local 'ac-clang-status)
 (make-variable-buffer-local 'ac-clang-current-candidate)
@@ -384,7 +381,7 @@ This variable will typically contain include paths, e.g., (\"-I~/MyProject\" \"-
 ;;  Receive server responses (completion candidates) and fire auto-complete
 (defun ac-clang-parse-completion-results (proc)
   (with-current-buffer (process-buffer proc)
-    (ac-clang-parse-output ac-clang-saved-prefix)))
+    (ac-clang-parse-output)))
 
 (defun ac-clang-filter-output (proc string)
   (ac-clang-append-process-output-to-process-buffer proc string)
@@ -398,18 +395,10 @@ This variable will typically contain include paths, e.g., (\"-I~/MyProject\" \"-
 (defun ac-clang-candidate ()
   (case ac-clang-status
     (idle
-     (setq ac-clang-saved-prefix ac-prefix)
-     (if (< (length ac-prefix) 2)
+     (if (< (length ac-prefix) 1)
          (message "ac-clang-candidate triggered with short prefix")
        (message "ac-clang-candidate triggered - fetching candidates...")
        
-       
-       ;; NOTE: although auto-complete would filter the result for us, but when there's
-       ;;       a HUGE number of candidates avaliable it would cause auto-complete to
-       ;;       block. So we filter it uncompletely here, then let auto-complete filter
-       ;;       the rest later, this would ease the feeling of being "stalled" at some degree.
-       
-       ;; (message "saved prefix: %s" ac-clang-saved-prefix)
        (with-current-buffer (process-buffer ac-clang-completion-process)
          (erase-buffer))
        (setq ac-clang-status 'wait)
