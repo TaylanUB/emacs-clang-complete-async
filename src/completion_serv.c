@@ -1,7 +1,7 @@
 #include <stdlib.h>
+#include <sys/time.h>
 #include <string.h>
 #include "completion.h"
-
 
 
 /* Copy command line parameters (except source filename) to cmdline_args  */
@@ -23,8 +23,7 @@ static void __copy_cmdlineArgs(int argc, char *argv[], completion_Session *sessi
 
 /* Initialize basic information for completion, such as source filename, initial source 
    buffer and command line arguments for clang */
-void 
-__initialize_completionSession(int argc, char *argv[], completion_Session *session)
+void __initialize_completionSession(int argc, char *argv[], completion_Session *session)
 {
     /* filename shall be the last parameter */
     session->src_filename = argv[argc - 1];
@@ -65,8 +64,7 @@ static struct CXUnsavedFile __get_CXUnsavedFile(const completion_Session *sessio
     return unsaved_files;
 }
 
-CXTranslationUnit 
-completion_parseTranslationUnit(completion_Session *session)
+CXTranslationUnit completion_parseTranslationUnit(completion_Session *session)
 {
     struct CXUnsavedFile unsaved_files = __get_CXUnsavedFile(session);
     session->cx_tu = 
@@ -87,13 +85,18 @@ int completion_reparseTranslationUnit(completion_Session *session)
             session->cx_tu, 1, &unsaved_files, session->ParseOptions);
 }
 
-CXCodeCompleteResults* 
-completion_codeCompleteAt(
-    completion_Session *session, int line, int column)
+CXCodeCompleteResults* completion_codeCompleteAt(completion_Session *session, int line, int column)
 {
     struct CXUnsavedFile unsaved_files = __get_CXUnsavedFile(session);
-    return 
-        clang_codeCompleteAt(
-            session->cx_tu, session->src_filename, line, column, 
-            &unsaved_files, 1, session->CompleteAtOptions);
+    
+    return clang_codeCompleteAt(session->cx_tu,
+                                session->src_filename,
+                                line,
+                                column,
+                                &unsaved_files,
+                                1,
+                                session->CompleteAtOptions);
 }
+
+
+

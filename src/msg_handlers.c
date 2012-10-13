@@ -1,3 +1,4 @@
+#include <sys/time.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
@@ -67,6 +68,10 @@ void completion_doCompletion(completion_Session *session, FILE *fp)
     fscanf(fp, "row:%d",    &row);    __skip_the_rest(fp);
     fscanf(fp, "column:%d", &column); __skip_the_rest(fp);
 
+    /* get the prefix */
+    char prefix[LINE_MAX];
+    fscanf(fp, "prefix:%s", prefix); __skip_the_rest(fp);
+
     /* get a copy of fresh source file */
     completion_readSourcefile(session, fp);
 
@@ -74,10 +79,23 @@ void completion_doCompletion(completion_Session *session, FILE *fp)
     res = completion_codeCompleteAt(session, row, column);
     clang_sortCodeCompletionResults(res->Results, res->NumResults);
 
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
+    
     /* fprintf(stderr, "code completion results: %d\n", res->NumResults); */
-    completion_printCodeCompletionResults(res, stdout);
+    completion_printCodeCompletionResults(res, stdout, prefix);
     fprintf(stdout, "$"); fflush(stdout);    /* we need to inform emacs that all 
                                                 candidates has already been sent */
+
+    
+    gettimeofday(&end, NULL);
+    long elapsed = (end.tv_sec - start.tv_sec) * 1000000 + end.tv_usec - start.tv_usec;
+    
+    FILE *file;
+    file = fopen("/Users/griffinschneider/log.txt", "a");
+    fprintf(file, "Printing took %f milliseconds, with %d results.\n", elapsed / 1000.0F, res->NumResults);
+    fclose(file);
+    
     clang_disposeCodeCompleteResults(res);
 }
 

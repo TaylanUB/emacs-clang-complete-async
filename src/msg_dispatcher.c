@@ -23,7 +23,8 @@ __command_dispatch_table[] =
 };
 
 
-/* Dispatch different messages to their corresponding message handlers */
+/* Main Loop:
+   Dispatch different messages to their corresponding message handlers */
 void completion_AcceptRequest(completion_Session *session, FILE *fp)
 {
     unsigned int i_entry = 0;

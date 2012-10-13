@@ -34,6 +34,7 @@ typedef struct __completion_Session_struct
 #define  DEFAULT_PARSE_OPTIONS       CXTranslationUnit_PrecompiledPreamble
 #define  DEFAULT_COMPLETEAT_OPTIONS  CXCodeComplete_IncludeMacros
 #define  INITIAL_SRC_BUFFER_SIZE     4096    /* 4KB */
+#define  MAX_COMPLETIONS_TO_PRINT    100
 
 
 
@@ -54,10 +55,10 @@ void startup_completionSession(int argc, char *argv[], completion_Session *sessi
 
 
 /* Print specified completion string to fp. */
-void completion_printCompletionLine(CXCompletionString completion_string, FILE *fp);
+int completion_printCompletionLine(CXCompletionString completion_string, FILE *fp, char *prefix);
 
 /* Print all completion results to fp */
-void completion_printCodeCompletionResults(CXCodeCompleteResults *res, FILE *fp);
+void completion_printCodeCompletionResults(CXCodeCompleteResults *res, FILE *fp, char *prefix);
 
 
 /* Simple wrappers for clang parser functions */
