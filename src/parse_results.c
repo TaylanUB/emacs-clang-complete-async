@@ -145,13 +145,38 @@ int completion_printCompletionLine(
     }
 }
 
-/* Print the first MAX_COMPLETIONS_TO_PRINT completions to the fp. */
+/* Quicksort CXCompletionResults by their completionPriority */
+void swap(CXCompletionResult *a, CXCompletionResult *b)
+{
+  CXCompletionResult t=*a; *a=*b; *b=t;
+}
+void sort(CXCompletionResult arr[], int beg, int end)
+{
+  if (end > beg + 1)
+  {
+    unsigned int piv = clang_getCompletionPriority(arr[beg].CompletionString), l = beg + 1, r = end;
+    while (l < r)
+    {
+      if (clang_getCompletionPriority(arr[l].CompletionString) <= piv)
+        l++;
+      else
+        swap(&arr[l], &arr[--r]);
+    }
+    swap(&arr[--l], &arr[beg]);
+    sort(arr, beg, l);
+    sort(arr, r, end);
+  }
+}
+
+
+/* Print the MAX_COMPLETIONS_TO_PRINT completions with the highest completionPriority*/
 void completion_printCodeCompletionResults(CXCodeCompleteResults *res, FILE *fp, char *prefix)
 {
     unsigned int i = 0;
     unsigned int n = 0;
+    sort(res->Results, 0, res->NumResults);
     for ( ; i < res->NumResults; i++) {
-        n += completion_printCompletionLine(res->Results[i].CompletionString, fp, prefix)
+        n += completion_printCompletionLine(res->Results[i].CompletionString, fp, prefix);
         if (n > MAX_COMPLETIONS_TO_PRINT) {
             break;
         }

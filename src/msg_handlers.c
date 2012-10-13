@@ -77,7 +77,6 @@ void completion_doCompletion(completion_Session *session, FILE *fp)
 
     /* calculate and show code completions results */
     res = completion_codeCompleteAt(session, row, column);
-    clang_sortCodeCompletionResults(res->Results, res->NumResults);
 
     struct timeval start, end;
     gettimeofday(&start, NULL);
