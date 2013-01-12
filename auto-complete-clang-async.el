@@ -63,15 +63,15 @@ e.g., (\"-I~/MyProject\" \"-I.\")."
 (make-variable-buffer-local 'ac-clang-cflags)
 
 
-
-
 (defconst ac-clang-completion-pattern
   "^COMPLETION: \\([^\s\n:]*\\)\\(?: : \\)*\\(.*$\\)")
 
 (defun ac-clang-parse-output ()
   (goto-char (point-min))
-  (let (lines match detailed-info
-              (prev-match ""))
+  (let (lines
+        match
+        detailed-info
+        (prev-match ""))
     (while (re-search-forward ac-clang-completion-pattern nil t)
       (setq match (match-string-no-properties 1))
       (unless (string= "Pattern" match)
@@ -82,12 +82,11 @@ e.g., (\"-I~/MyProject\" \"-I.\")."
               (when detailed-info
                 (setq match
                       (propertize match
-                                  'ac-clang-help
-                                  (concat
-                                   (get-text-property
-                                    0 'ac-clang-help (car lines))
-                                   "\n"
-                                   detailed-info)))
+                                  'ac-clang-help (concat
+                                                  (get-text-property
+                                                   0 'ac-clang-help (car lines))
+                                                  "\n"
+                                                  detailed-info)))
                 (setf (car lines) match)))
           (setq prev-match match)
           (when detailed-info
