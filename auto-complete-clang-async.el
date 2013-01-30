@@ -97,28 +97,6 @@ e.g., (\"-I~/MyProject\" \"-I.\")."
 
 (defconst ac-clang-error-buffer-name "*clang error*")
 
-(defun ac-clang-handle-error (res args)
-  (goto-char (point-min))
-  (let* ((buf (get-buffer-create ac-clang-error-buffer-name))
-         (cmd (concat ac-clang-executable " " (mapconcat 'identity args " ")))
-         (pattern (format ac-clang-completion-pattern ""))
-         (err (if (re-search-forward pattern nil t)
-                  (buffer-substring-no-properties (point-min)
-                                                  (1- (match-beginning 0)))
-                ;; Warn the user more agressively if no match was found.
-                (message "clang failed with error %d:\n%s" res cmd)
-                (buffer-string))))
-
-    (with-current-buffer buf
-      (let ((inhibit-read-only t))
-        (erase-buffer)
-        (insert (current-time-string)
-                (format "\nclang failed with error %d:\n" res)
-                cmd "\n\n")
-        (insert err)
-        (setq buffer-read-only t)
-        (goto-char (point-min))))))
-
 
 (defsubst ac-clang-create-position-string (pos)
   (save-excursion
